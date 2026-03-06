@@ -1,0 +1,24 @@
+Package: ModalCens
+Type: Package
+Title: Parametric Modal Regression with Right Censoring
+Version: 0.1.0
+Authors@R: 
+    c(person("Christian", "Galarza", , "chedgala@espol.edu.ec", role = c("aut", "cre")),
+      person("Victor", "Lachos", role = "aut"))
+Description: Implements parametric modal regression for continuous positive
+    distributions of the exponential family under right censoring.
+    Provides functions to link the conditional mode to a linear predictor
+    using reparameterizations for Gamma, Beta, Weibull, and Inverse Gaussian
+    families. Includes maximum likelihood estimation via numerical
+    optimization, asymptotic inference based on the observed Fisher
+    information matrix, and model diagnostics using randomized quantile
+    residuals.
+License: GPL-3
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+Depends: R (>= 4.1.0)
+Imports: 
+    stats,
+    graphics
+URL: https://github.com/chedgala/ModalCens
+BugReports: https://github.com/chedgala/ModalCens/issues
