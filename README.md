@@ -113,6 +113,7 @@ plot(models[[best_family]])
 ### Mode Reparameterization
 
 The package reparameterizes exponential family densities of the form
+
 $$
 f(y_i \mid \theta_i, \phi) = \exp\left\lbrace\frac{y_i \theta_i - b(\theta_i)}{a(\phi)} + c(y_i, \phi)\right\rbrace
 $$
