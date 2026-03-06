@@ -162,8 +162,8 @@ The function returns an object of class `"ModalCens"` with methods for `summary(
 
 ## Authors
 
-- **Christian E. Galarza** — ESPOL, Ecuador · [chedgala@espol.edu.ec](mailto:chedgala@espol.edu.ec)
-- **Víctor H. Lachos** — University of Connecticut · [hlachos@uconn.edu](mailto:hlachos@uconn.edu)
+- **Christian E. Galarza** — Escuela Superior Politécnica del Litoral, Ecuador · [chedgala@espol.edu.ec](mailto:chedgala@espol.edu.ec)
+- **Víctor H. Lachos** — University of Connecticut, USA · [hlachos@uconn.edu](mailto:hlachos@uconn.edu)
 
 ---
 
