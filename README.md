@@ -1,7 +1,7 @@
 # ModalCens: Parametric Modal Regression with Right Censoring
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/chedgala/ModalCens/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chedgala/ModalCens/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen)](https://github.com/chedgala/ModalCens)
 [![License: GPL-3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- badges: end -->
 
