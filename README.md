@@ -44,66 +44,51 @@ devtools::install_github("chedgala/ModalCens")
 
 ---
 
-## Quick Start
+## Quick Start: Multi-Family Comparison
 
-This example uses the built-in `trees` dataset with simulated censoring **for illustration purposes only**. In practice, supply your own dataset with a real censoring indicator.
+Censoring is simulated for didactic purposes. Each family is fitted on its natural domain:
+long-tail families (Gamma, Weibull, InvGauss) on the original scale, and Beta on the $(0,1)$ scale.
 
 ```r
 library(ModalCens)
-
-# 1. Prepare data: scale Volume to (0, 1) for multi-family compatibility
 data(trees)
-y_scaled <- (trees$Volume - min(trees$Volume) + 1) /
-            (max(trees$Volume) - min(trees$Volume) + 2)
+set.seed(007)
 
-# 2. Simulate a censoring indicator (for illustration only)
-#    cens = 1: right-censored  |  cens = 0: fully observed
-set.seed(2026)
-cut_point <- quantile(y_scaled, 0.85)
-cens_ind  <- ifelse(y_scaled > cut_point, 1, 0)
-y_obs     <- pmin(y_scaled, cut_point)
+# Simulate 15% right-censoring (cens = 1: censored | cens = 0: observed)
+q85      <- quantile(trees$Volume, 0.85)
+cens_ind <- as.integer(trees$Volume > q85)
 
-df <- data.frame(
-  y      = y_obs,
-  cens   = cens_ind,
-  Girth  = trees$Girth,
-  Height = trees$Height
-)
+# (0,1) rescaling for Beta only
+ys     <- (trees$Volume - min(trees$Volume) + 1) / (max(trees$Volume) - min(trees$Volume) + 2)
+q85b   <- quantile(ys, 0.85)
+cens_b <- as.integer(ys > q85b)
 
-# 3. Fit a Gamma modal regression
-fit_gamma <- modal_cens(y ~ Girth + Height, data = df,
-                        cens = df$cens, family = "gamma")
+# Original scale for long-tail families; (0,1) scale for Beta
+df_orig <- data.frame(y = pmin(trees$Volume, q85), cens = cens_ind,
+                      Girth = trees$Girth, Height = trees$Height)
+df_beta <- data.frame(y = pmin(ys, q85b), cens = cens_b,
+                      Girth = trees$Girth, Height = trees$Height)
 
-# 4. Summary and diagnostics
-summary(fit_gamma)
-plot(fit_gamma)
-```
+# Fit all families
+datasets <- list(gamma = df_orig, weibull = df_orig,
+                 invgauss = df_orig, beta = df_beta)
+models <- list(); aic_values <- list()
 
----
-
-## Multi-Family Comparison
-
-```r
-families   <- c("gamma", "beta", "weibull", "invgauss")
-models     <- list()
-aic_values <- numeric()
-
-for (f in families) {
-  mod <- try(
-    modal_cens(y ~ Girth + Height, data = df, cens = df$cens, family = f),
-    silent = TRUE
-  )
-  if (!inherits(mod, "try-error")) {
-    models[[f]]     <- mod
-    aic_values[[f]] <- AIC(mod)
-  }
+for (f in names(datasets)) {
+  mod <- try(modal_cens(y ~ Girth + Height, data = datasets[[f]],
+                        cens = datasets[[f]]$cens, family = f), silent = TRUE)
+  if (!inherits(mod, "try-error")) { models[[f]] <- mod; aic_values[[f]] <- AIC(mod) }
 }
 
-best_family <- names(which.min(aic_values))
-cat("Best model:", best_family, "| AIC =", min(aic_values), "\n")
+# Select best model by AIC
+best <- names(which.min(aic_values))
+cat("Best family:", best, "| AIC =", round(aic_values[[best]], 3), "\n")
 
-summary(models[[best_family]])
-plot(models[[best_family]])
+# Full analysis of the winner
+fit <- models[[best]]
+summary(fit)
+plot(fit)
+confint(fit)
 ```
 
 ---
