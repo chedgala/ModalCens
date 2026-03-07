@@ -292,6 +292,22 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
   # ------------------------------------------------------------------
   # 5. Optimization (BFGS)
   # ------------------------------------------------------------------
+
+  # 1. Definir init_par estándar (ceros por defecto)
+  init_par <- rep(0, ncol(X) + 1)
+
+  # 2. Ajuste condicional para la Gaussiana Inversa
+  if (family == "invgauss") {
+    # Forzar un intercepto negativo para reducir la Moda inicial (opcional pero recomendado)
+    init_par[1] <- -1.0
+
+    # Forzar un phi (lambda) inicial alto para cumplir lambda > 3 * max(Mode)
+    # Nota: Si tu paquete parametriza el último valor como log(phi), usa log(5).
+    # Si es phi directo, usa 5. Asumo log(phi) basado en tu código Gamma.
+    init_par[length(init_par)] <- log(5.0)
+  }
+
+  # 3. Optimización
   opt <- optim(
     par     = init_par,
     fn      = neg_loglik,
