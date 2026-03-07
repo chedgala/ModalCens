@@ -20,8 +20,8 @@ are detected.}
 same length as \code{nrow(data)}.}
 
 \item{family}{A character string naming the distribution family: \code{"gamma"},
-\code{"beta"}, \code{"weibull"}, or \code{"invgauss"}. Default is
-\code{"gamma"}.}
+\code{"beta"}, \code{"weibull"}, \code{"invgauss"}, or \code{"lognormal"}.
+Default is \code{"gamma"}.}
 }
 \value{
 An object of class \code{"ModalCens"} containing:
@@ -58,6 +58,7 @@ The resulting mode-parameter mappings are:
   Beta       \tab logit \tab \eqn{\alpha = \phi+1.01},\ \eqn{\beta_p = (\alpha-1)/M_i - \alpha + 2} \cr
   Weibull    \tab log   \tab \eqn{k = \phi+1.01},\ \eqn{\lambda = M_i\,(k/(k-1))^{1/k}} \cr
   Inv. Gauss \tab log   \tab \eqn{\mu = [(M_i^{-2}) - 3/(\lambda M_i)]^{-1/2}},\ \eqn{\lambda > 3M_i} \cr
+  Log-Normal \tab log   \tab \eqn{\mu_{LN} = \log(M_i) + \sigma^2},\ \eqn{\sigma = \sqrt{\phi}} \cr
 }
 
 The censored log-likelihood is
@@ -112,7 +113,7 @@ df_beta <- data.frame(y = pmin(ys, q85b), cens = cens_b,
 
 # Fit all families
 datasets <- list(gamma = df_orig, weibull = df_orig,
-                 invgauss = df_orig, beta = df_beta)
+                 invgauss = df_orig, lognormal = df_orig, beta = df_beta)
 models <- list(); aic_values <- list()
 
 for (f in names(datasets)) {

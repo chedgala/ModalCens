@@ -11,7 +11,7 @@ print.ModalCens <- function(x, ...) {
 summary.ModalCens <- function(object, ...) {
   cat("\n--- Modal Regression Summary ---\n")
   cat("Family:", object$family, "\n")
-  cat("N:", object$n, "(Censored:", sum(object$cens == 1),")\n\n")
+  cat("N:", object$n, "(Censored:",sum(object$cens == 1),")\n\n")
 
   se <- sqrt(diag(object$vcov))
   n_beta <- length(object$coefficients)
