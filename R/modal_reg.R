@@ -16,6 +16,7 @@
 #'   Beta       \tab logit \tab \eqn{\alpha = \phi+1.01},\ \eqn{\beta_p = (\alpha-1)/M_i - \alpha + 2} \cr
 #'   Weibull    \tab log   \tab \eqn{k = \phi+1.01},\ \eqn{\lambda = M_i\,(k/(k-1))^{1/k}} \cr
 #'   Inv. Gauss \tab log   \tab \eqn{\mu = [(M_i^{-2}) - 3/(\lambda M_i)]^{-1/2}},\ \eqn{\lambda > 3M_i} \cr
+#'   Log-Normal \tab log   \tab \eqn{\mu_{LN} = \log(M_i) + \sigma^2},\ \eqn{\sigma = \sqrt{\phi}} \cr
 #' }
 #'
 #' The censored log-likelihood is
@@ -36,8 +37,8 @@
 #'   \code{0} = fully observed. Must not contain \code{NA}s and must have the
 #'   same length as \code{nrow(data)}.
 #' @param family A character string naming the distribution family: \code{"gamma"},
-#'   \code{"beta"}, \code{"weibull"}, or \code{"invgauss"}. Default is
-#'   \code{"gamma"}.
+#'   \code{"beta"}, \code{"weibull"}, \code{"invgauss"}, or \code{"lognormal"}.
+#'   Default is \code{"gamma"}.
 #'
 #' @return An object of class \code{"ModalCens"} containing:
 #' \describe{
@@ -59,7 +60,7 @@
 #'
 #' @author Christian Galarza and Victor Lachos
 #'
-#' @importFrom stats dgamma pgamma dbeta pbeta dweibull pweibull pnorm qnorm
+#' @importFrom stats dgamma pgamma dbeta pbeta dweibull pweibull dlnorm plnorm pnorm qnorm
 #' @importFrom stats optim model.frame model.matrix model.response coef vcov
 #' @importFrom stats residuals logLik AIC BIC runif qlogis lm.fit na.fail
 #' @export
@@ -106,7 +107,7 @@
 #'
 #' # Fit all families
 #' datasets <- list(gamma = df_orig, weibull = df_orig,
-#'                  invgauss = df_orig, beta = df_beta)
+#'                  invgauss = df_orig, lognormal = df_orig, beta = df_beta)
 #' models <- list(); aic_values <- list()
 #'
 #' for (f in names(datasets)) {
@@ -129,7 +130,7 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
   # ------------------------------------------------------------------
   # 0. Input validation
   # ------------------------------------------------------------------
-  family <- match.arg(family, choices = c("gamma", "beta", "weibull", "invgauss"))
+  family <- match.arg(family, choices = c("gamma", "beta", "weibull", "invgauss", "lognormal"))
 
   if (!is.data.frame(data)) {
     stop("'data' must be a data frame.")
@@ -177,7 +178,7 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
   # ------------------------------------------------------------------
   # 2. Family-specific response validation
   # ------------------------------------------------------------------
-  if (family %in% c("gamma", "weibull", "invgauss") && any(y <= 0)) {
+  if (family %in% c("gamma", "weibull", "invgauss", "lognormal") && any(y <= 0)) {
     stop(sprintf("All response values must be strictly positive for family = '%s'.", family))
   }
   if (family == "beta" && (any(y <= 0) || any(y >= 1))) {
@@ -248,6 +249,15 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
         z2   <- -sqrt(lambda_ig / y) * (y / mu + 1)
         prob <- log(pmax(1e-10,
                          1 - (pnorm(z1) + exp(2 * lambda_ig / mu) * pnorm(z2))))
+
+      } else if (family == "lognormal") {
+        # Mode of LogNormal: M = exp(mu_ln - sigma^2)
+        # => mu_ln = log(M) + sigma^2, sigma = sqrt(phi)
+        sigma_ln <- sqrt(phi)
+        mu_ln    <- log(moda) + phi
+        dens     <- dlnorm(y, meanlog = mu_ln, sdlog = sigma_ln, log = TRUE)
+        prob     <- plnorm(y, meanlog = mu_ln, sdlog = sigma_ln,
+                           lower.tail = FALSE, log.p = TRUE)
       }
 
     }) # end suppressWarnings
@@ -356,6 +366,12 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
                                  z1 <-  sqrt(lambda_ig / y) * (y / mu_ig - 1)
                                  z2 <- -sqrt(lambda_ig / y) * (y / mu_ig + 1)
                                  pnorm(z1) + exp(2 * lambda_ig / mu_ig) * pnorm(z2)
+                               },
+
+                               "lognormal" = {
+                                 sigma_ln <- sqrt(phi_est)
+                                 mu_ln    <- log(moda_est) + phi_est
+                                 plnorm(y, meanlog = mu_ln, sdlog = sigma_ln)
                                }
   ))
 

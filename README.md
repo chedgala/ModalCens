@@ -27,6 +27,7 @@ The methodology is grounded in the framework of modal linear regression introduc
   | `"beta"` | Logit | $(0, 1)$ | Proportions and rates |
   | `"weibull"` | Log | $(0, \infty)$ | Survival and reliability |
   | `"invgauss"` | Log | $(0, \infty)$ | Highly skewed data ($\lambda > 3M_i$) |
+  | `"lognormal"` | Log | $(0, \infty)$ | Multiplicative / log-symmetric data |
 
 - **Asymptotic Inference:** Standard errors derived from the observed Fisher information matrix (inverse Hessian at the MLE).
 
@@ -71,7 +72,7 @@ df_beta <- data.frame(y = pmin(ys, q85b), cens = cens_b,
 
 # Fit all families
 datasets <- list(gamma = df_orig, weibull = df_orig,
-                 invgauss = df_orig, beta = df_beta)
+                 invgauss = df_orig, lognormal = df_orig, beta = df_beta)
 models <- list(); aic_values <- list()
 
 for (f in names(datasets)) {
@@ -111,6 +112,7 @@ by solving the first-order condition $\left.\dfrac{\partial \log f(y_i)}{\partia
 | Beta | $\alpha = \phi + 1.01$, $\;\beta_p = (\alpha - 1)/M_i - \alpha + 2$ |
 | Weibull | $k = \phi + 1.01$, $\;\lambda = M_i \cdot (k/(k-1))^{1/k}$ |
 | Inv. Gaussian | $\mu = \bigl[M_i^{-2} - 3/(\lambda M_i)\bigr]^{-1/2}$, $\;\lambda > 3M_i$ |
+| Log-Normal | $\mu_{LN} = \log(M_i) + \sigma^2$, $\;\sigma = \sqrt{\phi}$ |
 
 ### Censored Log-Likelihood
 
@@ -137,7 +139,7 @@ modal_cens(formula, data, cens, family = "gamma")
 | `formula` | A formula object, e.g., `y ~ x1 + x2` |
 | `data` | A data frame with no missing values |
 | `cens` | Binary vector: `1` = right-censored, `0` = fully observed. Must have no `NA`s. |
-| `family` | One of `"gamma"`, `"beta"`, `"weibull"`, `"invgauss"` |
+| `family` | One of `"gamma"`, `"beta"`, `"weibull"`, `"invgauss"`, `"lognormal"` |
 
 The function stops with an error if any `NA` is detected in `cens` or in the variables referenced by `formula`. No imputation is performed.
 

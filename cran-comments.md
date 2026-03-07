@@ -2,6 +2,9 @@
 
 0 errors | 0 warnings | 1 note
 
-* This is a new submission.
+* This is an update to version 0.1.0 (now 0.2.0).
+* Added the Log-Normal (`"lognormal"`) distribution family with mode
+  reparameterization, right-censoring support, and randomized quantile
+  residuals.
 * The NOTE "unable to verify current time" is due to a local network
-issue and is unrelated to the package.
+  issue and is unrelated to the package.
