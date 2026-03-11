@@ -5,3 +5,5 @@
 ^test and submit/
 ^antigravity_log\.md$
 ^simulation_new\.R$
+^benchmark_rcpp\.R$
+^benchmark_full_cpp\.R$
