@@ -8,10 +8,10 @@ Authors@R:
 Description: Implements parametric modal regression for continuous positive
     distributions of the exponential family and beyond (e.g., Log-Logistic, 
     Birnbaum-Saunders) under right censoring. Provides functions to link the 
-    conditional mode to a linear predictor using reparameterizations. Includes maximum
+    conditional mode to a linear predictor using alternative parameterizations. Includes maximum
     likelihood estimation via numerical optimization, asymptotic inference based on 
     the observed Fisher information matrix, and model diagnostics using randomized 
-    quantile residuals. See Galarza and Lachos (2026) <https://arxiv.org/abs/2603.07099>.
+    quantile residuals. See Galarza and Lachos (2026) <doi:10.48550/arXiv.2603.07099>.
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.3

@@ -138,7 +138,7 @@ confint(fit)
 \references{
 Yao, W., & Li, L. (2014). A new regression model: modal linear regression. \emph{Scandinavian Journal of Statistics}, 41(3), 656-671.
 
-Galarza, C. E., & Lachos, V. H. (2026). Parametric Modal Regression for Positive Distributions. \emph{arXiv preprint}, arXiv:2603.07099. <https://arxiv.org/abs/2603.07099>
+Galarza, C. E., & Lachos, V. H. (2026). Parametric Modal Regression for Positive Distributions. \emph{arXiv preprint}, arXiv:2603.07099. <doi:10.48550/arXiv.2603.07099>
 
 Dunn, P. K., & Smyth, G. K. (1996). Randomized quantile residuals. \emph{Journal of Computational and Graphical Statistics}, 5(3), 236-244.
 }

@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen)](https://github.com/chedgala/ModalCens)
-[![License: GPL-3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: GPL-3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://www.r-project.org/Licenses/GPL-3)
 <!-- badges: end -->
 
 **ModalCens** is an R package for fitting parametric modal regression models to continuous positive random variables. While traditional Generalized Linear Models (GLMs) target the conditional mean, **ModalCens** directly models the conditional mode $M_i$, providing a more robust and meaningful measure of central tendency for asymmetric and heavy-tailed distributions — particularly under right censoring.
@@ -165,6 +165,6 @@ The function returns an object of class `"ModalCens"` with methods for `summary(
 
 - **Yao, W. & Li, L. (2014).** A new regression model: modal linear regression. *Scandinavian Journal of Statistics*, 41(3), 656–671. <https://doi.org/10.1111/sjos.12054>
 
-- **Galarza, C. E., & Lachos, V. H. (2026).** Parametric Modal Regression for Positive Distributions. *arXiv preprint*, arXiv:2603.07099. <https://arxiv.org/abs/2603.07099>
+- **Galarza, C. E., & Lachos, V. H. (2026).** Parametric Modal Regression for Positive Distributions. *arXiv preprint*, arXiv:2603.07099. <doi:10.48550/arXiv.2603.07099>
 
 - **Dunn, P. K. & Smyth, G. K. (1996).** Randomized quantile residuals. *Journal of Computational and Graphical Statistics*, 5(3), 236–244.
