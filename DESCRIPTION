@@ -6,13 +6,12 @@ Authors@R:
     c(person("Christian", "Galarza", , "chedgala@espol.edu.ec", role = c("aut", "cre")),
       person("Victor", "Lachos", role = "aut"))
 Description: Implements parametric modal regression for continuous positive
-    distributions of the exponential family under right censoring.
-    Provides functions to link the conditional mode to a linear predictor
-    using reparameterizations for Gamma, Beta, Weibull, Inverse Gaussian,
-    and Log-Normal families. Includes maximum likelihood estimation via
-    numerical optimization, asymptotic inference based on the observed Fisher
-    information matrix, and model diagnostics using randomized quantile
-    residuals.
+    distributions of the exponential family and beyond (e.g., Log-Logistic, 
+    Birnbaum-Saunders) under right censoring. Provides functions to link the 
+    conditional mode to a linear predictor using reparameterizations. Includes maximum
+    likelihood estimation via numerical optimization, asymptotic inference based on 
+    the observed Fisher information matrix, and model diagnostics using randomized 
+    quantile residuals. See Galarza and Lachos (2026) <https://arxiv.org/abs/2603.07099>.
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.3

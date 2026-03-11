@@ -5,9 +5,9 @@
 [![License: GPL-3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- badges: end -->
 
-**ModalCens** is an R package for fitting parametric modal regression models to continuous positive random variables within the exponential family. While traditional Generalized Linear Models (GLMs) target the conditional mean, **ModalCens** directly models the conditional mode $M_i$, providing a more robust and meaningful measure of central tendency for asymmetric and heavy-tailed distributions — particularly under right censoring.
+**ModalCens** is an R package for fitting parametric modal regression models to continuous positive random variables. While traditional Generalized Linear Models (GLMs) target the conditional mean, **ModalCens** directly models the conditional mode $M_i$, providing a more robust and meaningful measure of central tendency for asymmetric and heavy-tailed distributions — particularly under right censoring.
 
-The methodology is grounded in the framework of modal linear regression introduced by [Yao & Li (2014)](#references), with connections to recent advances surveyed in [Xiang, Yao & Cui (2026)](#references), extended here to parametric exponential family distributions under right censoring.
+The methodology is grounded in the framework of modal linear regression introduced by [Yao & Li (2014)](#references). It extends beyond traditional exponential family distributions to include highly flexible models such as the Log-Logistic and Birnbaum-Saunders distributions, as detailed in our preprint [Galarza & Lachos (2026)](#references).
 
 ---
 
@@ -26,8 +26,12 @@ The methodology is grounded in the framework of modal linear regression introduc
   | `"gamma"` | Log | $(0, \infty)$ | Skewed positive data |
   | `"beta"` | Logit | $(0, 1)$ | Proportions and rates |
   | `"weibull"` | Log | $(0, \infty)$ | Survival and reliability |
-  | `"invgauss"` | Log | $(0, \infty)$ | Highly skewed data ($\lambda > 3M_i$) |
+  | `"invgauss"` | Log | $(0, \infty)$ | Highly skewed data ($\lambda > 3M_i$) * |
   | `"lognormal"` | Log | $(0, \infty)$ | Multiplicative / log-symmetric data |
+  | `"loglogistic"` | Log | $(0, \infty)$ | Non-monotonic hazard rates, heavy tails |
+  | `"bisa"` | Log | $(0, \infty)$ | Fatigue life, wear-out processes |
+
+  *\* **Note on Inverse Gaussian:** The condition $\lambda > 3M_i$ required to ensure a valid mode parameterization is a strong parametric restriction. This can make the Inverse Gaussian distribution less plausible in many routine modeling contexts compared to the other families available.*
 
 - **Asymptotic Inference:** Standard errors derived from the observed Fisher information matrix (inverse Hessian at the MLE).
 
@@ -72,7 +76,8 @@ df_beta <- data.frame(y = pmin(ys, q85b), cens = cens_b,
 
 # Fit all families
 datasets <- list(gamma = df_orig, weibull = df_orig,
-                 invgauss = df_orig, lognormal = df_orig, beta = df_beta)
+                 invgauss = df_orig, lognormal = df_orig, beta = df_beta,
+                 loglogistic = df_orig, bisa = df_orig)
 models <- list(); aic_values <- list()
 
 for (f in names(datasets)) {
@@ -113,6 +118,8 @@ by solving the first-order condition $\left.\dfrac{\partial \log f(y_i)}{\partia
 | Weibull | $k = \phi + 1.01$, $\;\lambda = M_i \cdot (k/(k-1))^{1/k}$ |
 | Inv. Gaussian | $\mu = \bigl[M_i^{-2} - 3/(\lambda M_i)\bigr]^{-1/2}$, $\;\lambda > 3M_i$ |
 | Log-Normal | $\mu_{LN} = \log(M_i) + \sigma^2$, $\;\sigma = \sqrt{\phi}$ |
+| Log-Logistic | $k = \phi + 1.01$, $\;\alpha = M_i \cdot \bigl((k+1)/(k-1)\bigr)^{1/k}$ |
+| Birnbaum-Saunders | $\alpha_{bs} = \sqrt{\phi}$, $\;\beta_{bs} = M_i / \bigl(\sqrt{1+\alpha_{bs}^2/4} - \alpha_{bs}/2\bigr)^2$ |
 
 ### Censored Log-Likelihood
 
@@ -139,7 +146,7 @@ modal_cens(formula, data, cens, family = "gamma")
 | `formula` | A formula object, e.g., `y ~ x1 + x2` |
 | `data` | A data frame with no missing values |
 | `cens` | Binary vector: `1` = right-censored, `0` = fully observed. Must have no `NA`s. |
-| `family` | One of `"gamma"`, `"beta"`, `"weibull"`, `"invgauss"`, `"lognormal"` |
+| `family` | One of `"gamma"`, `"beta"`, `"weibull"`, `"invgauss"`, `"lognormal"`, `"loglogistic"`, `"bisa"` |
 
 The function stops with an error if any `NA` is detected in `cens` or in the variables referenced by `formula`. No imputation is performed.
 
@@ -158,6 +165,6 @@ The function returns an object of class `"ModalCens"` with methods for `summary(
 
 - **Yao, W. & Li, L. (2014).** A new regression model: modal linear regression. *Scandinavian Journal of Statistics*, 41(3), 656–671. <https://doi.org/10.1111/sjos.12054>
 
-- **Xiang, S., Yao, W. & Cui, X. (2026).** Advances in modal regression: from theoretical foundations to practical implementations. *Wiley Interdisciplinary Reviews: Computational Statistics*, e70014. <https://doi.org/10.1002/wics.70014>
+- **Galarza, C. E., & Lachos, V. H. (2026).** Parametric Modal Regression for Positive Distributions. *arXiv preprint*, arXiv:2603.07099. <https://arxiv.org/abs/2603.07099>
 
 - **Dunn, P. K. & Smyth, G. K. (1996).** Randomized quantile residuals. *Journal of Computational and Graphical Statistics*, 5(3), 236–244.

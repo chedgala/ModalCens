@@ -3,3 +3,5 @@
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
 ^test and submit/
+^antigravity_log\.md$
+^simulation_new\.R$

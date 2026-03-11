@@ -17,6 +17,8 @@
 #'   Weibull    \tab log   \tab \eqn{k = \phi+1.01},\ \eqn{\lambda = M_i\,(k/(k-1))^{1/k}} \cr
 #'   Inv. Gauss \tab log   \tab \eqn{\mu = [(M_i^{-2}) - 3/(\lambda M_i)]^{-1/2}},\ \eqn{\lambda > 3M_i} \cr
 #'   Log-Normal \tab log   \tab \eqn{\mu_{LN} = \log(M_i) + \sigma^2},\ \eqn{\sigma = \sqrt{\phi}} \cr
+#'   Log-Logistic \tab log \tab \eqn{k = \phi+1.01},\ \eqn{\alpha = M_i\,((k+1)/(k-1))^{1/k}} \cr
+#'   Birnbaum-Saunders \tab log \tab \eqn{\alpha_{bs} = \sqrt{\phi}},\ \eqn{\beta_{bs} = M_i / (\sqrt{1+\alpha_{bs}^2/4} - \alpha_{bs}/2)^2} \cr
 #' }
 #'
 #' The censored log-likelihood is
@@ -37,8 +39,8 @@
 #'   \code{0} = fully observed. Must not contain \code{NA}s and must have the
 #'   same length as \code{nrow(data)}.
 #' @param family A character string naming the distribution family: \code{"gamma"},
-#'   \code{"beta"}, \code{"weibull"}, \code{"invgauss"}, or \code{"lognormal"}.
-#'   Default is \code{"gamma"}.
+#'   \code{"beta"}, \code{"weibull"}, \code{"invgauss"}, \code{"lognormal"},
+#'   \code{"loglogistic"}, or \code{"bisa"}. Default is \code{"gamma"}.
 #'
 #' @return An object of class \code{"ModalCens"} containing:
 #' \describe{
@@ -58,9 +60,17 @@
 #'   \item{y}{Response variable.}
 #' }
 #'
+#'
+#' @references 
+#' Yao, W., & Li, L. (2014). A new regression model: modal linear regression. \emph{Scandinavian Journal of Statistics}, 41(3), 656-671.
+#' 
+#' Galarza, C. E., & Lachos, V. H. (2026). Parametric Modal Regression for Positive Distributions. \emph{arXiv preprint}, arXiv:2603.07099. <https://arxiv.org/abs/2603.07099>
+#' 
+#' Dunn, P. K., & Smyth, G. K. (1996). Randomized quantile residuals. \emph{Journal of Computational and Graphical Statistics}, 5(3), 236-244.
+#' 
 #' @author Christian Galarza and Victor Lachos
 #'
-#' @importFrom stats dgamma pgamma dbeta pbeta dweibull pweibull dlnorm plnorm pnorm qnorm
+#' @importFrom stats dgamma pgamma dbeta pbeta dweibull pweibull dlnorm plnorm dnorm pnorm qnorm
 #' @importFrom stats optim model.frame model.matrix model.response coef vcov
 #' @importFrom stats residuals logLik AIC BIC runif qlogis lm.fit na.fail
 #' @export
@@ -107,7 +117,8 @@
 #'
 #' # Fit all families
 #' datasets <- list(gamma = df_orig, weibull = df_orig,
-#'                  invgauss = df_orig, lognormal = df_orig, beta = df_beta)
+#'                  invgauss = df_orig, lognormal = df_orig, beta = df_beta,
+#'                  loglogistic = df_orig, bisa = df_orig)
 #' models <- list(); aic_values <- list()
 #'
 #' for (f in names(datasets)) {
@@ -130,7 +141,7 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
   # ------------------------------------------------------------------
   # 0. Input validation
   # ------------------------------------------------------------------
-  family <- match.arg(family, choices = c("gamma", "beta", "weibull", "invgauss", "lognormal"))
+  family <- match.arg(family, choices = c("gamma", "beta", "weibull", "invgauss", "lognormal", "loglogistic", "bisa"))
 
   if (!is.data.frame(data)) {
     stop("'data' must be a data frame.")
@@ -178,7 +189,7 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
   # ------------------------------------------------------------------
   # 2. Family-specific response validation
   # ------------------------------------------------------------------
-  if (family %in% c("gamma", "weibull", "invgauss", "lognormal") && any(y <= 0)) {
+  if (family %in% c("gamma", "weibull", "invgauss", "lognormal", "loglogistic", "bisa") && any(y <= 0)) {
     stop(sprintf("All response values must be strictly positive for family = '%s'.", family))
   }
   if (family == "beta" && (any(y <= 0) || any(y >= 1))) {
@@ -258,6 +269,31 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
         dens     <- dlnorm(y, meanlog = mu_ln, sdlog = sigma_ln, log = TRUE)
         prob     <- plnorm(y, meanlog = mu_ln, sdlog = sigma_ln,
                            lower.tail = FALSE, log.p = TRUE)
+                           
+      } else if (family == "loglogistic") {
+        # Mode of Log-Logistic: M = alpha * ((beta - 1) / (beta + 1))^(1/beta) (for beta > 1)
+        # Let beta = k = phi + 1.01 (> 1). Then shape = k, scale = alpha.
+        k_ll <- phi + 1.01
+        alpha_ll <- moda * ((k_ll + 1) / (k_ll - 1))^(1 / k_ll)
+        # Using exact log-density to avoid issues:
+        # f(y) = (k/alpha) * (y/alpha)^(k-1) / (1 + (y/alpha)^k)^2
+        # S(y) = 1 / (1 + (y/alpha)^k)
+        y_scaled <- y / alpha_ll
+        dens <- log(k_ll) - log(alpha_ll) + (k_ll - 1) * log(y_scaled) - 2 * log1p(y_scaled^k_ll)
+        prob <- -log1p(y_scaled^k_ll)
+        
+      } else if (family == "bisa") {
+        # Birnbaum-Saunders Mode: M = beta * (sqrt(1 + alpha^2 / 4) - alpha / 2)^2
+        # Let alpha_bs = sqrt(phi) or simply phi will be used as the dispersion-related parameter alpha_bs^2.
+        alpha_bs <- sqrt(phi)
+        beta_bs <- moda / (sqrt(1 + alpha_bs^2 / 4) - alpha_bs / 2)^2
+        # Density computations:
+        # z_bs = (sqrt(y / beta_bs) - sqrt(beta_bs / y)) / alpha_bs
+        sq_y_b <- sqrt(y / beta_bs)
+        sq_b_y <- sqrt(beta_bs / y)
+        z_bs <- (sq_y_b - sq_b_y) / alpha_bs
+        dens <- log(sq_y_b + sq_b_y) - log(2 * alpha_bs * y) + dnorm(z_bs, log = TRUE)
+        prob <- pnorm(z_bs, lower.tail = FALSE, log.p = TRUE)
       }
 
     }) # end suppressWarnings
@@ -388,6 +424,19 @@ modal_cens <- function(formula, data, cens, family = "gamma") {
                                  sigma_ln <- sqrt(phi_est)
                                  mu_ln    <- log(moda_est) + phi_est
                                  plnorm(y, meanlog = mu_ln, sdlog = sigma_ln)
+                               },
+                               
+                               "loglogistic" = {
+                                 k_ll <- phi_est + 1.01
+                                 alpha_ll <- moda_est * ((k_ll + 1) / (k_ll - 1))^(1 / k_ll)
+                                 1 - (1 / (1 + (y / alpha_ll)^k_ll))
+                               },
+                               
+                               "bisa" = {
+                                 alpha_bs <- sqrt(phi_est)
+                                 beta_bs <- moda_est / (sqrt(1 + alpha_bs^2 / 4) - alpha_bs / 2)^2
+                                 z_bs <- (sqrt(y / beta_bs) - sqrt(beta_bs / y)) / alpha_bs
+                                 pnorm(z_bs)
                                }
   ))
 
