@@ -1,6 +1,7 @@
 # ModalCens: Parametric Modal Regression with Right Censoring
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/ModalCens)](https://CRAN.R-project.org/package=ModalCens)
 [![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen)](https://github.com/chedgala/ModalCens)
 [![License: GPL-3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://www.r-project.org/Licenses/GPL-3)
 <!-- badges: end -->
